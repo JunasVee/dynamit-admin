@@ -42,7 +42,6 @@ export default function Orders() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
     const [pendingUpdates, setPendingUpdates] = useState<Record<string, Partial<Order>>>({});
 
     useEffect(() => {
@@ -179,7 +178,7 @@ export default function Orders() {
                                     </TableCell>
                                     <TableCell className="text-center space-x-2">
                                         <Button variant="secondary" onClick={() => handleConfirmUpdate(order.id)} disabled={!pendingUpdates[order.id]}>Confirm Update</Button>
-                                        <Button variant="destructive" onClick={() => setDeleteOrderId(order.id)}>Delete</Button>
+                                        <Button variant="destructive">Delete</Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
