@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import apiClient from '@/lib/apiClient';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
@@ -53,7 +51,7 @@ export default function Orders() {
                 const response = await apiClient.get<{ status: boolean; message: string; data: Order[] }>('packages/');
                 setOrders(response.data.data);
             } catch (err) {
-                setError('Failed to fetch orders.');
+                setError('Failed to fetch orders.' + err);
             } finally {
                 setLoading(false);
             }
@@ -109,20 +107,20 @@ export default function Orders() {
                 return updated;
             });
         } catch (err) {
-            setError('Failed to update order.');
+            setError('Failed to update order.' + err);
         }
     };
 
-    const handleDeleteOrder = async () => {
-        if (!deleteOrderId) return;
-        try {
-            await apiClient.delete(`packages/${deleteOrderId}`);
-            setOrders((prevOrders) => prevOrders.filter((order) => order.id !== deleteOrderId));
-            setDeleteOrderId(null);
-        } catch (err) {
-            setError('Failed to delete order.');
-        }
-    };
+    // const handleDeleteOrder = async () => {
+    //     if (!deleteOrderId) return;
+    //     try {
+    //         await apiClient.delete(`packages/${deleteOrderId}`);
+    //         setOrders((prevOrders) => prevOrders.filter((order) => order.id !== deleteOrderId));
+    //         setDeleteOrderId(null);
+    //     } catch (err) {
+    //         setError('Failed to delete order.' + err);
+    //     }
+    // };
 
     return (
         <div className="flex h-screen">
