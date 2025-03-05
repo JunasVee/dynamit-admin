@@ -11,25 +11,26 @@ import MenuBar from '@/components/MenuBar';
 
 interface Receiver {
     id: string;
-    name: string;
-    phone: string;
-    address: string;
-    latitude: string;
-    longitude: string;
-    createdAt: string;
-    updatedAt: string;
+    name?: string;
+    phone?: string;
+    address?: string;
+    latitude?: string;
+    longitude?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 interface Sender {
     id: string;
-    name: string;
-    phone: string;
-    address: string;
-    latitude: string;
-    longitude: string;
-    createdAt: string;
-    updatedAt: string;
+    name?: string;
+    phone?: string;
+    address?: string;
+    latitude?: string;
+    longitude?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
+
 
 interface Order {
     id: string;
@@ -47,14 +48,41 @@ export default function Orders() {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const response = await apiClient.get<{ status: boolean; message: string; data: Order[] }>('packages/');
-                setOrders(response.data.data);
+                const response = await apiClient.get<{ status: boolean; message: string; data: any[] }>('packages/');
+        
+                const mappedOrders: Order[] = response.data.data.map((order) => ({
+                    id: order.id,
+                    status: order.status,
+                    receiver: {
+                        id: order.id,
+                        name: order.receiver_name,
+                        phone: order.receiver_phone,
+                        address: order.receiver_address,
+                        latitude: order.receiver_latitude,
+                        longitude: order.receiver_longitude,
+                        createdAt: order.createdAt,
+                        updatedAt: order.updatedAt,
+                    },
+                    sender: {
+                        id: order.id,
+                        name: order.sender_name,
+                        phone: order.sender_phone,
+                        address: order.sender_address,
+                        latitude: order.sender_latitude,
+                        longitude: order.sender_longitude,
+                        createdAt: order.createdAt,
+                        updatedAt: order.updatedAt,
+                    },
+                }));
+        
+                setOrders(mappedOrders);
             } catch (err) {
                 setError('Failed to fetch orders.' + err);
             } finally {
                 setLoading(false);
             }
         };
+        
 
         fetchOrders();
     }, []);
@@ -110,16 +138,19 @@ export default function Orders() {
         }
     };
 
-    // const handleDeleteOrder = async () => {
-    //     if (!deleteOrderId) return;
-    //     try {
-    //         await apiClient.delete(`packages/${deleteOrderId}`);
-    //         setOrders((prevOrders) => prevOrders.filter((order) => order.id !== deleteOrderId));
-    //         setDeleteOrderId(null);
-    //     } catch (err) {
-    //         setError('Failed to delete order.' + err);
-    //     }
-    // };
+    const handleDeleteOrder = async (orderId: string) => {
+        const orderToDelete = orders.find((order) => order.id === orderId);
+        if (!orderToDelete) return;
+    
+        try {
+            await apiClient.delete(`packages/${orderId}`);
+    
+            setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId));
+        } catch (err) {
+            setError('Failed to delete order.' + err);
+        }
+    };
+    
 
     return (
         <div className="flex h-screen">
@@ -178,7 +209,7 @@ export default function Orders() {
                                     </TableCell>
                                     <TableCell className="text-center space-x-2">
                                         <Button variant="secondary" onClick={() => handleConfirmUpdate(order.id)} disabled={!pendingUpdates[order.id]}>Confirm Update</Button>
-                                        <Button variant="destructive">Delete</Button>
+                                        <Button variant="destructive" onClick={() => handleDeleteOrder(order.id)}>Delete</Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
