@@ -21,7 +21,7 @@ export default function Drivers() {
     useEffect(() => {
         const fetchOrders = async () => {
           try {
-            const response = await apiClient.get<{ status: boolean; message: string; data: any[] }>("drivers/");
+            const response = await apiClient.get<{ status: boolean; message: string; data: Drivers[] }>("drivers/");
             
             const mappedDrivers: Drivers[] = response.data.data.map((driver) => ({
                 id: driver.id,
@@ -36,11 +36,10 @@ export default function Drivers() {
             }));
     
             setDriversData(mappedDrivers);
-          } catch (err: any) {
-            console.log("Failed to fetch orders. " + (err.response?.data?.message || err.message));
-            
-          } finally {
-            console.log("");
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              console.log("Failed to fetch drivers. " + err.message);
+            }
           }
         };
     

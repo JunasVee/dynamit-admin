@@ -34,6 +34,25 @@ interface Order {
   sender: ReceiverSender;
 }
 
+interface OrderResponse {
+  id: string;
+  status: string;
+  receiver_id: string;
+  receiver_name: string;
+  receiver_phone: string;
+  receiver_address: string;
+  receiver_latitude: string;
+  receiver_longitude: string;
+  createdAt: string;
+  updatedAt: string;
+  sender_id: string;
+  sender_name: string;
+  sender_phone: string;
+  sender_address: string;
+  sender_latitude: string;
+  sender_longitude: string;
+}
+
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -43,7 +62,7 @@ export default function Orders() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await apiClient.get<{ status: boolean; message: string; data: any[] }>("packages/");
+        const response = await apiClient.get<{ status: boolean; message: string; data: OrderResponse[] }>("packages/");
         
         const mappedOrders: Order[] = response.data.data.map((order) => ({
           id: order.id,
@@ -71,8 +90,12 @@ export default function Orders() {
         }));
 
         setOrders(mappedOrders);
-      } catch (err: any) {
-        setError("Failed to fetch orders. " + (err.response?.data?.message || err.message));
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError("Failed to fetch orders. " + err.message);
+        } else {
+          setError("Failed to fetch orders. An unknown error occurred.");
+        }
       } finally {
         setLoading(false);
       }
@@ -122,8 +145,12 @@ export default function Orders() {
         delete updated[orderId];
         return updated;
       });
-    } catch (err: any) {
-      setError("Failed to update order. " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError("Failed to update orders. " + err.message);
+      } else {
+        setError("Failed to update orders. An unknown error occurred.");
+      }
     }
   };
 
@@ -132,8 +159,12 @@ export default function Orders() {
       await apiClient.delete(`packages/${packageId}`);
       setOrders((prevOrders) => prevOrders.filter((order) => order.id !== packageId));
       setError(null);
-    } catch (err: any) {
-      setError(`Failed to delete package. ${err.response?.data?.message || err.message}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError("Failed to delete orders. " + err.message);
+      } else {
+        setError("Failed to delete orders. An unknown error occurred.");
+      }
     }
   };
 
