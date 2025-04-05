@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import MenuBar from "@/components/MenuBar";
 
+
 interface ReceiverSender {
   id: string;
   name?: string;
@@ -32,7 +33,11 @@ interface Order {
   status: string;
   receiver: ReceiverSender;
   sender: ReceiverSender;
+  packageDescription?: string;
+  packageWeight?: number;
+  packagePrice?: number;
 }
+
 
 interface OrderResponse {
   id: string;
@@ -137,9 +142,41 @@ export default function Orders() {
 
   const handleConfirmUpdate = async (orderId: string) => {
     if (!pendingUpdates[orderId]) return;
+  
     try {
-      const updatePayload = pendingUpdates[orderId];
+      const updatedOrder = pendingUpdates[orderId];
+  
+      const updatePayload: Record<string, string | number | undefined> = {
+        receiverName: updatedOrder.receiver?.name,
+        receiverAddress: updatedOrder.receiver?.address,
+        receiverPhone: updatedOrder.receiver?.phone,
+        receiverLatitude: updatedOrder.receiver?.latitude,
+        receiverLongitude: updatedOrder.receiver?.longitude,
+        senderName: updatedOrder.sender?.name,
+        senderAddress: updatedOrder.sender?.address,
+        senderPhone: updatedOrder.sender?.phone,
+        senderLatitude: updatedOrder.sender?.latitude,
+        senderLongitude: updatedOrder.sender?.longitude,
+        packageDescription: updatedOrder.packageDescription,
+        packageWeight: updatedOrder.packageWeight,
+        packagePrice: updatedOrder.packagePrice,
+      };
+  
+      // Remove undefined values to prevent sending empty updates
+      Object.keys(updatePayload).forEach(
+        (key) => updatePayload[key] === undefined && delete updatePayload[key]
+      );
+  
       await apiClient.put(`packages/${orderId}`, updatePayload);
+  
+      // Merge confirmed updates into the orders state
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, ...updatedOrder } : order
+        )
+      );
+  
+      // Clear pending updates
       setPendingUpdates((prev) => {
         const updated = { ...prev };
         delete updated[orderId];
@@ -153,6 +190,7 @@ export default function Orders() {
       }
     }
   };
+  
 
   const handleDeleteOrder = async (packageId: string) => {
     try {
